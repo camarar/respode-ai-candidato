@@ -1,0 +1,59 @@
+Responde aí Candidato!
+
+http://localhost:5000/eleicao/2018/
+
+GET:   	/candidato
+GET:	/candidato/{id}
+GET:	/candidato?cargo={cargo}
+POST:	/candidato
+PUT:	/candidato/{id}
+DELET: 	/candidato/{id}
+
+GET:	/candidato/{id}/sobre
+GET:	/candidato/{id}/resposta
+GET:	/candidato/{id}/resposta/{id}
+POST:	/candidato/{id}/resposta
+PUT:	/candidato/{id}/resposta/{id}
+DELETE:	/candidato/{id}/resposta/{id}
+
+
+CANDIDATO:
+anoEleicao	
+abrangencia
+cargo
+numeroCandidato
+nomeCompletoCandidato
+nomeCandidato
+vice
+cpf
+email
+situacaoCandidatura
+detalheSituacaoCandidatura
+numeroPartido
+siglaPartido
+nomePartido
+nomeColigacao
+composicaoColigacao
+nacionalidade
+uf
+municipio
+dataNascimento
+idadeDataPosse
+tituloEleitoral
+genero
+grauInstrucao
+estadoCivil
+corRaca
+ocupacao
+declararBens
+reeleicao
+fonte
+
+
+
+
+
+
+
+
+
