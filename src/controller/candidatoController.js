@@ -28,44 +28,83 @@ client.on('error', (err) => {
 export default({ config, db }) => {
     let api = Router();
 
-    // 1) Método (GET): Selecionar Todos os Candidatos: 'http://localhost:5000/eleicao/2018/candidato' QueryString ?cargo=:cargo
+    // 1) Método (GET): Selecionar Todos os Candidatos: 'http://localhost:5000/eleicao/2018/candidato' QueryString ?cargo=:cargo&localidade=:localidade
 
     api.get('/candidato', (req, res) => {
-        if (req.query.cargo){
+        if (req.query.cargo && req.query.localidade){
             console.log("QueryString");
-            client.get(req.path + req.query.cargo, (error, result) => {
+            client.get(req.path + req.query.cargo + req.query.localidade, (error, result) => {
                 if (result) {
                     res.json(JSON.parse(result));
                     console.log("Redis");
                 } else{
-                    Candidato.find({'cargo' : req.query.cargo}, (error, candidatos) => {
+                    Candidato.find({'cargo' : req.query.cargo, 
+                            'nomeUnidadeEleitoral' : req.query.localidade}, (error, candidatos) => {
                         if (error) {
                             res.send('Erro ao selecionar os candidatos...: ' + error);
                         }
                         res.json(candidatos); 
                         console.log("MongoDB");
-                        client.setex(req.path + req.query.cargo, 60, JSON.stringify(candidatos));
+                        client.setex(req.path + req.query.cargo + req.query.localidade, 300, JSON.stringify(candidatos));
                     });
                 }
             });
         } else{
-            console.log("ALL");
-            client.get(req.path + "all", (error, result) => {
-                if (result) {
-                    res.json(JSON.parse(result));
-                    console.log("Redis");
-                } else{
-                    Candidato.find({}, (error, candidatos) => {
-                        if (error) {
-                            res.send('Erro ao selecionar os candidatos...: ' + error);
+            if (req.query.cargo && !req.query.localidade){
+                console.log("QueryString");
+                client.get(req.path + req.query.cargo, (error, result) => {
+                    if (result) {
+                        res.json(JSON.parse(result));
+                        console.log("Redis");
+                    } else{
+                        Candidato.find({'cargo' : req.query.cargo}, (error, candidatos) => {
+                            if (error) {
+                                res.send('Erro ao selecionar os candidatos...: ' + error);
+                            }
+                            res.json(candidatos); 
+                            console.log("MongoDB");
+                            client.setex(req.path + req.query.cargo, 3600, JSON.stringify(candidatos));
+                        });
+                    }
+                });
+            } else{
+                if (!req.query.cargo && req.query.localidade){
+                    console.log("QueryString");
+                    client.get(req.path + req.query.localidade, (error, result) => {
+                        if (result) {
+                            res.json(JSON.parse(result));
+                            console.log("Redis");
+                        } else{
+                            Candidato.find({'nomeUnidadeEleitoral' : req.query.localidade}, (error, candidatos) => {
+                                if (error) {
+                                    res.send('Erro ao selecionar os candidatos...: ' + error);
+                                }
+                                res.json(candidatos); 
+                                console.log("MongoDB");
+                                client.setex(req.path + req.query.localidade, 3600, JSON.stringify(candidatos));
+                            });
                         }
-                        res.json(candidatos); 
-                        console.log("MongoDB");
-                        client.setex(req.path + "all", 60, JSON.stringify(candidatos));
+                    });
+                } else{
+                    console.log("ALL");
+                    client.get(req.path + "all", (error, result) => {
+                        if (result) {
+                            res.json(JSON.parse(result));
+                            console.log("Redis");
+                        } else{
+                            Candidato.find({}, (error, candidatos) => {
+                                if (error) {
+                                    res.send('Erro ao selecionar os candidatos...: ' + error);
+                                }
+                                res.json(candidatos); 
+                                console.log("MongoDB");
+                                client.setex(req.path + "all", 3600, JSON.stringify(candidatos));
+                            });
+                        }
                     });
                 }
-            });
-        }   
+            }
+        }
     });
 
     // 2) Método (GET): Selecionar Candidato por Id: 'http://localhost:5000/eleicao/2018/candidato/:id'
@@ -100,7 +139,9 @@ export default({ config, db }) => {
         novoCandidato.numeroCandidato = req.body.numeroCandidato;
         novoCandidato.nomeCompletoCandidato = req.body.nomeCompletoCandidato;
         novoCandidato.nomeCandidato = req.body.nomeCandidato;
-        novoCandidato.vice = req.body.vice;
+        novoCandidato.nomeViceCandidato = req.body.nomeViceCandidato;
+        novoCandidato.nome1Suplente = req.body.nome1Suplente;
+        novoCandidato.nome2Suplente = req.body.nome2Suplente;
         novoCandidato.cpf = req.body.cpf;
         novoCandidato.email = req.body.email;
         novoCandidato.situacaoCandidatura = req.body.situacaoCandidatura;
@@ -154,7 +195,9 @@ export default({ config, db }) => {
             candidato.numeroCandidato = req.body.numeroCandidato;
             candidato.nomeCompletoCandidato = req.body.nomeCompletoCandidato;
             candidato.nomeCandidato = req.body.nomeCandidato;
-            candidato.vice = req.body.vice;
+            candidato.nomeViceCandidato = req.body.nomeViceCandidato;
+            candidato.nome1Suplente = req.body.nome1Suplente;
+            candidato.nome2Suplente = req.body.nome2Suplente;
             candidato.cpf = req.body.cpf;
             candidato.email = req.body.email;
             candidato.situacaoCandidatura = req.body.situacaoCandidatura;
@@ -206,7 +249,7 @@ export default({ config, db }) => {
     api.post('/candidato/:id/questionario', (req, res) => {
         Candidato.findById(req.params.id, (error, candidato) => {
             if (error) {
-                res.send('Erro ao tentar localizar um questionario do Candidato...: ' + error);
+                res.send('Erro ao tentar localizar um candidato...: ' + error);
             }
 
             let novaQuestao = new Questionario();
@@ -217,16 +260,16 @@ export default({ config, db }) => {
 
             novaQuestao.save(error => {
                 if (error) {
-                    res.send('Erro ao tentar adicionar um questionario ao Candidato...: ' + error);
+                    res.send('Erro ao tentar adicionar um questionario ao candidato...: ' + error);
                 }
 
                 candidato.questionarios.push(novaQuestao);
                 candidato.save(error => {
                     if (error) {
-                        res.send('Erro ao tentar adicionar um questionario ao Candidato...: ' + error);
+                        res.send('Erro ao tentar adicionar um questionario ao candidato...: ' + error);
                     }
 
-                    res.json({ message: 'Questionario do Candidato gravado com sucesso!' });
+                    res.json({ message: 'Questionario do candidato gravado com sucesso!' });
                 });
             });
         });
@@ -240,7 +283,7 @@ export default({ config, db }) => {
                 res.json(JSON.parse(result));
                 console.log("Redis");
             } else{
-                Questionario.find({candidato : req.params.id}, (error, questionarios) => {
+                Questionario.find({candidato : req.params.id, resposta : { $exists: true } }, (error, questionarios) => {
                     if (error) {
                         res.send('Erro ao selecionar os questionarios do Candidato...: ' + error);
                     }
@@ -249,10 +292,7 @@ export default({ config, db }) => {
                     client.setex(req.path + "all", 60, JSON.stringify(questionarios));
                 });
             }
-
         });
-
-        
     });
 
         // 8) Método (PUT): Adicionar uma Pergunta -> Candidato(Id): 'http://localhost:5000/eleicao/2018/candidato/:id/questionario/:idQ'
@@ -262,8 +302,6 @@ export default({ config, db }) => {
                 if (error) {
                     res.send('Erro ao tentar localizar um questionario do Candidato...: ' + error);
                 }
-
-                questionario.pergunta = req.body.pergunta;
                 questionario.resposta = req.body.resposta;
     
                 questionario.save(error => {
