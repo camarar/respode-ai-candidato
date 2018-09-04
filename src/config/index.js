@@ -8,7 +8,7 @@
  */
 
 export default {
-    "port": 80,
+    "port": 5000,
     //"mongoUrl": "mongodb://localhost:27017/respode-ai-candidato-api",
     "mongoUrl": "mongodb://camarar:ReSpOnDeAiCaNdIdAtO01@respode-ai-candidato-api-shard-00-00-p9ups.mongodb.net:27017,respode-ai-candidato-api-shard-00-01-p9ups.mongodb.net:27017,respode-ai-candidato-api-shard-00-02-p9ups.mongodb.net:27017/respode-ai-candidato-api?ssl=true&replicaSet=respode-ai-candidato-api-shard-0&authSource=admin&retryWrites=true",
     //"redisHost": "localhost",
