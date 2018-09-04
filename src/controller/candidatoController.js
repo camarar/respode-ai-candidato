@@ -17,7 +17,8 @@ import Questionario from '../model/questionario';
 
 let client = redis.createClient({
     port      : config.redisPort,              
-    host      : config.redisHost
+    host      : config.redisHost,
+    password  : config.redisPassword
 });
 
 // Print redis errors to the console
