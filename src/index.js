@@ -32,7 +32,10 @@ app.use(bodyParser.json());
 // Rotas da API Eleicao (/eleicao):
 app.use('/eleicao', routes);
 
-app.server.listen(config.port);
-console.log(`Aplicação sendo executada na porta ${app.server.address().port}`);
+//app.server.listen(config.port);
+app.server.listen(process.env.PORT);
+//console.log(`Aplicação sendo executada na porta ${app.server.address().port}`);
+console.log(`Aplicação sendo executada na porta ${process.env.PORT}`);
+
 
 export default app;
